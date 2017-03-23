@@ -16,3 +16,6 @@ class CacheServer:
 
     def total_size_of_videos(self):
         return sum(i.size for i in self.videos)
+
+    def __hash__(self):
+        return self.id

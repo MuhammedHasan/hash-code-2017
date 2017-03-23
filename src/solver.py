@@ -18,23 +18,29 @@ class Solver:
         req_end = [[end, req_vi[0], req_vi[1]]
                    for end in self.end_points for req_vi in end.requests]
 
-        video_hist = dict()
+        # video_hist = dict()
+        #
+        # for (end_point, req, video) in req_end:
+        #     video_hist.setdefault(video, 0)
+        #     video_hist[video] += req
+        #
+        # for i in range(len(req_end)):
+        #     req_end[i][1] = video_hist[req_end[i][2]]
 
-        for (end_point, req, video) in req_end:
-            video_hist.setdefault(video, 0)
-            video_hist[video] += req
-
-        for i in range(len(req_end)):
-            req_end[i][1] = video_hist[req_end[i][2]]
-
-        for (end_point, req, video) in sorted(req_end, key=lambda x: 25 * x[2].size - x[1]):
+        cacha_pro = dict()
+        for (end_point, req, video) in sorted(req_end, key=lambda x:  x[1] - 10 * x[2].size, reverse=True):
             if end_point.has_video_in_cache(video):
                 continue
             for la, cac in sorted(end_point.latency, key=lambda x: x[0]):
-                if cac.is_there_place_for(video):
-                    cac.store(video)
-                    self.store_video(cac.id, video.id)
-                    break
+                cacha_pro.setdefault((cac, video), [])
+                cacha_pro[(cac, video)].append(end_point)
+
+        for cac_video, users in sorted(cacha_pro.items(), key=lambda x: len(x[1]), reverse=True):
+            if all([u.has_video_in_cache(cac_video[1]) for u in users]):
+                continue
+            if cac_video[0].is_there_place_for(cac_video[1]):
+                cac_video[0].store(cac_video[1])
+                self.store_video(cac_video[0].id, cac_video[1].id)
 
     def parse(self):
         with open('../outputs/%s.txt' % self.filename, 'w') as f:

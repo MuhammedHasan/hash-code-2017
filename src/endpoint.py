@@ -15,3 +15,6 @@ class Endpoint:
         for l, c in self.latency:
             if video in c.videos:
                 return True
+
+    def __hash__(self):
+        return self.id
